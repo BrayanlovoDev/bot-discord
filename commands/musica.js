@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('musica')
+		.setName('canciones')
 		.setDescription('Busca una Cancion!')
     .addStringOption(option => 
       option.setName('cancion')
