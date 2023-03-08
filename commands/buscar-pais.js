@@ -56,7 +56,7 @@ module.exports = {
 					
   
 					const {country: countryDB} = db.prepare(`
-					DELETE FROM users
+					SELECT country FROM users
 					WHERE discord_id = ?`).run(discordId);
 
 					//api de pais

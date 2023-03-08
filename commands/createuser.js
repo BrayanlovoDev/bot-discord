@@ -1,3 +1,4 @@
+const { default: axios } = require('axios');
 const { SlashCommandBuilder } = require('discord.js');
 
 const db = require('../database');
@@ -8,11 +9,11 @@ module.exports = {
 		.setDescription('crear un usuario en la base de datos')
     .addStringOption(option => 
       option.setName('nombre')
-      .setDescription('Tu primer nombre')
+      .setDescription('Tu primer nombre y primer apellido')
         .setRequired(true) )
         .addStringOption(option => 
-      option.setName('apellido')
-        .setDescription('Tu primer apellido')
+      option.setName('contrasena')
+        .setDescription('Tu contrasena')
         .setRequired(true) )
         .addStringOption(option => 
        option.setName('email')
@@ -24,21 +25,35 @@ module.exports = {
 	async execute(interaction) {
   try {
     const name = interaction.options.getString('nombre');
-    const lastName = interaction.options.getString('apellido');
+    const password = interaction.options.getString('contrasena');
     const email = interaction.options.getString('email');
     const country = interaction.options.getString('pais');
-    console.log(name, lastName, email, country);
+    console.log(name, password, email, country);
  
+    const newUser = {
+      name,
+      email,
+      password,
+      passwordConfirm: password,
+    };
+
+    await axios.post('http://api.cup2022.ir/api/v1/user', newUser);
+
     db.prepare(`
-    INSERT INTO users (discord_id, first_name, last_name, email, country)
+    INSERT INTO users (discord_id, name, password, email, country)
     VALUES (?, ?, ?, ?, ?)
-    `).run(interaction.user.id, name, lastName, email, country);
+    `).run(interaction.user.id, name, password, email, country);
     await interaction.reply('Registrado exitosamente!');
   } catch (error) {
+    //ver errores de la api
+    console.log(error.response?.data?.message);
+    //ver otros errores
     console.log(error.message);
     if (error.message === 'UNIQUE constraint failed: users.discord_id') {
       return await interaction.reply('Tu usuario ya se encuentra registrado.');
-    } else if (error.message === 'UNIQUE constraint failed:users.email') {
+    }if (error.response?.data?.message) {
+      return await interaction.reply('Tu contrasena es menor a 8 digitos');
+    }else if (error.message === 'UNIQUE constraint failed:users.email') {
      return await interaction.reply('Tu correo ya esta registrado');
     }
 
